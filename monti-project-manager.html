@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Project Manager — Monti</title>
+<style>
+:root{
+  --bg:#F6F4EF;--surface:#FFFFFF;--s2:#F1EDE6;--s3:#EAE5DC;
+  --border:#E0D9CF;--border-s:#C9C1B5;
+  --text:#18150F;--sub:#6A6258;--muted:#A09588;
+  --H:#2660A4;--Hbg:#E8F0FB;--Hlight:#5B8DC5;
+  --D:#287358;--Dbg:#E5F4EE;--Dlight:#5BA98A;
+  --V:#7030A0;--Vbg:#F2E8FA;--Vlight:#A86CD4;
+  --acc:#7D5C35;--accbg:#F3E9D8;
+  --red:#B83228;--redbg:#FDECEA;
+  --yel:#9E6E14;--yelbg:#FDF1D6;
+  --grn:#287358;--grnbg:#E5F4EE;
+  --rad:10px;
+  --sh:0 1px 4px rgba(0,0,0,0.07),0 1px 10px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:100}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.logo{width:30px;height:30px;border-radius:7px;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}
+.hdr-title{font-size:14px;font-weight:700;color:var(--text)}
+.hdr-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.proj-pill{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.proj-pill button{padding:5px 14px;font-size:12px;font-weight:500;border:none;cursor:pointer;transition:all .15s;background:transparent;color:var(--muted)}
+.proj-pill button:first-child{border-right:1px solid var(--border)}
+.proj-pill button.on{background:var(--acc);color:#fff}
+
+/* NAV */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;display:flex}
+.ntab{padding:11px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;user-select:none;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.ntab:hover{color:var(--sub)}
+.ntab.on{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* MAIN */
+.main{padding:22px 28px;max-width:1240px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+
+/* BUTTONS */
+.btn{padding:7px 15px;border-radius:var(--rad);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-p{background:var(--acc);color:#fff;border-color:var(--acc)}.btn-p:hover{background:#6A4D2A}
+.btn-g{background:transparent;color:var(--sub);border-color:var(--border)}.btn-g:hover{background:var(--s2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-ic{padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted)}.btn-ic:hover{background:var(--s2);color:var(--sub)}
+
+/* FORM */
+.fg{margin-bottom:13px}
+.fl{font-size:11px;font-weight:600;color:var(--sub);margin-bottom:4px;display:block;letter-spacing:.3px}
+.fi,.fs,.ft{width:100%;padding:8px 11px;border-radius:var(--rad);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .15s;outline:none}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--acc)}
+.ft{resize:vertical;min-height:60px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;align-items:center;justify-content:center;padding:20px}
+.mo.open{display:flex}
+.mdl{background:var(--surface);border-radius:14px;width:100%;max-width:500px;box-shadow:0 10px 36px rgba(0,0,0,.2);overflow:hidden}
+.mdl-lg{max-width:580px}
+.mh{padding:16px 20px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mt{font-size:15px;font-weight:600}
+.mx{width:26px;height:26px;border-radius:6px;border:none;background:var(--s2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--muted)}.mx:hover{background:var(--border)}
+.mb{padding:18px 20px}
+.mf{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--rad);border:1px solid var(--border);box-shadow:var(--sh)}
+
+/* BADGE */
+.bdg{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600;gap:3px;white-space:nowrap}
+.b-done{background:var(--grnbg);color:var(--grn)}
+.b-prog{background:var(--Hbg);color:var(--H)}
+.b-pend{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.b-late{background:var(--redbg);color:var(--red)}
+.b-H{background:var(--Hbg);color:var(--H)}
+.b-D{background:var(--Dbg);color:var(--D)}
+.b-V{background:var(--Vbg);color:var(--V)}
+.b-both{background:var(--accbg);color:var(--acc)}
+
+/* PRIO DOT */
+.pd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ph{background:var(--red)}.pm{background:var(--yel)}.pl{background:var(--muted)}
+
+/* PROGRESS */
+.pw{height:5px;background:var(--s2);border-radius:100px;overflow:hidden;border:1px solid var(--border)}
+.pf{height:100%;border-radius:100px;transition:width .4s}
+.pfH{background:var(--H)}.pfD{background:var(--D)}.pfA{background:var(--acc)}
+
+/* ===== DASHBOARD ===== */
+.dash-top{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:14px 16px;box-shadow:var(--sh)}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.stat-val{font-size:30px;font-weight:700;color:var(--text);line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stat-bar{margin-top:9px;height:4px;background:var(--s2);border-radius:100px;overflow:hidden}
+.stat-bar-fill{height:100%;border-radius:100px}
+
+.dash-mid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px}
+.dash-member-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;box-shadow:var(--sh)}
+.dmc-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.dmc-name{font-size:14px;font-weight:600}
+.dmc-role{font-size:11px;color:var(--muted);margin-top:1px}
+.dmc-pct{margin-left:auto;font-size:20px;font-weight:700}
+.dmc-body{padding:12px 16px}
+.dmc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.dmc-row:last-child{border-bottom:none}
+.dmc-k{color:var(--sub)}
+.dmc-v{font-weight:600}
+
+.dash-tl{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden;margin-bottom:18px}
+.dash-tl-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dash-tl-title{font-size:14px;font-weight:600}
+
+.dash-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden}
+.dkpi-head{padding:13px 16px;border-bottom:1px solid var(--border)}
+.dkpi-title{font-size:14px;font-weight:600}
+.dkpi-row{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid var(--border);gap:8px}
+.dkpi-row:last-child{border-bottom:none}
+.dkpi-name{flex:1;font-size:12px;color:var(--text)}
+.dkpi-who{font-size:11px;margin-right:4px}
+.dkpi-actual{font-size:12px;font-weight:600;min-width:60px;text-align:right}
+.dkpi-target{font-size:11px;color:var(--muted);min-width:60px;text-align:right}
+
+/* ===== SOW ===== */
+.sow-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:15px 20px;box-shadow:var(--sh);margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.ss-item{flex:1;min-width:100px}
+.ss-label{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:3px}
+.ss-val{font-size:24px;font-weight:700}
+.ss-div{width:1px;height:36px;background:var(--border)}
+
+.sow-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.mc-top{padding:13px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.avH{background:var(--Hbg);color:var(--H)}
+.avD{background:var(--Dbg);color:var(--D)}
+.avV{background:var(--Vbg);color:var(--V)}
+.pfV{background:var(--V)}
+.mc-name{font-size:14px;font-weight:600}
+.mc-role-wrap{display:flex;align-items:center;gap:5px;margin-top:2px}
+.mc-role{font-size:11px;color:var(--muted)}
+.role-edit-btn{font-size:10px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted)}.role-edit-btn:hover{background:var(--s2);color:var(--sub)}
+.mc-pct{margin-left:auto;font-size:20px;font-weight:700}
+.mc-chips{padding:9px 16px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);color:var(--sub);background:var(--s2);cursor:default}
+.chip-add{cursor:pointer;color:var(--muted);border-style:dashed}.chip-add:hover{background:var(--s3);color:var(--sub)}
+.mc-prog{padding:8px 16px 10px;border-bottom:1px solid var(--border)}
+.mc-prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px}
+.mc-tasks{padding:11px 16px 13px}
+.tl-area-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:7px}
+.task-list{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;min-height:16px}
+.task-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;transition:border-color .15s}
+.task-item:hover{border-color:var(--border-s)}
+.tcb{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border-s);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.tcb.ck{background:var(--grn);border-color:var(--grn)}.tcb.ck::after{content:'✓';color:#fff;font-size:10px;font-weight:700;line-height:1}
+.ttx{flex:1}
+.ttm{font-size:12px;color:var(--text);line-height:1.35}.ttm.done{text-decoration:line-through;color:var(--muted)}
+.tmt{display:flex;gap:5px;align-items:center;margin-top:2px}
+.tdel{margin-left:auto;padding:2px 5px;border-radius:4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:12px;opacity:0;transition:opacity .15s}
+.task-item:hover .tdel{opacity:1}.tdel:hover{background:var(--redbg);color:var(--red)}
+.add-form{display:flex;gap:6px}
+.add-inp{flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.add-inp:focus{border-color:var(--acc)}
+.add-sel{padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-family:inherit;color:var(--text);outline:none}
+.add-btn{padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;color:var(--sub);font-weight:500;white-space:nowrap}.add-btn:hover{background:var(--s2)}
+.empty-t{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+
+/* ===== TIMELINE ===== */
+.tl-scroll{overflow-x:auto;padding-bottom:4px}
+.tl-table{min-width:900px;width:100%;border-collapse:collapse}
+.tl-table th{font-size:11px;color:var(--muted);font-weight:600;padding:7px 5px;text-align:center;border-bottom:1px solid var(--border);background:var(--s2);white-space:nowrap}
+.tl-table th.lh{text-align:left;padding-left:14px;width:210px}
+.tl-table th.today-col{background:var(--Hbg);color:var(--H)}
+.tl-table td{border-bottom:1px solid var(--border);padding:3px 2px;vertical-align:middle}
+.tl-table td.lc{padding:8px 8px 8px 14px}
+.tl-task-name{font-size:12px;font-weight:500;color:var(--text)}
+.tl-task-who{display:flex;gap:5px;margin-top:3px;align-items:center}
+.tl-bar{height:22px;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden}
+.tbH{background:var(--H)}.tbD{background:var(--D)}.tbV{background:var(--V)}.tbB{background:var(--acc)}
+.tl-today-marker{background:rgba(38,96,164,.08)}
+.tl-past{opacity:.55}
+
+/* ===== KPI ===== */
+.kpi-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kstat{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);padding:13px 15px;box-shadow:var(--sh)}
+.kstat-l{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.kstat-v{font-size:28px;font-weight:700}
+.kstat-s{font-size:11px;color:var(--muted);margin-top:2px}
+.kstat-b{margin-top:9px;height:4px;background:var(--s2);border-radius:100px;overflow:hidden}
+.kstat-bf{height:100%;border-radius:100px}
+
+.kpi-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.kmc{background:var(--surface);border:1px solid var(--border);border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden}
+.kmc-h{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.kmc-name{font-size:13px;font-weight:600}
+.kpi-row{display:flex;align-items:center;padding:8px 15px;border-bottom:1px solid var(--border);gap:7px}
+.kpi-row:last-child{border-bottom:none}
+.kpi-m{flex:1;font-size:12px;color:var(--text)}
+.kpi-tg{font-size:11px;color:var(--muted);white-space:nowrap}
+.kpi-ac{font-size:12px;font-weight:600;white-space:nowrap;min-width:48px;text-align:right}
+.no-kpi{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--text);color:#fff;padding:9px 15px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* INLINE EDIT */
+.inline-edit{border:none;background:transparent;font-size:11px;color:var(--muted);font-family:inherit;outline:none;width:100%;cursor:text}
+.inline-edit:focus{color:var(--text)}
+
+@media(max-width:960px){
+  .sow-grid,.dash-mid,.kpi-cols{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .main{padding:14px}.hdr{padding:0 14px}.nav{padding:0 10px;overflow-x:auto}
+  .sow-grid,.dash-mid,.kpi-cols,.dash-top,.kpi-stats{grid-template-columns:1fr}
+  .dash-top{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">M</div>
+    <div>
+      <div class="hdr-title" id="hdr-pname">Monti Homestay</div>
+      <div class="hdr-sub">Hasan, Diwa & Vicky — Project Manager</div>
+    </div>
+  </div>
+  <div class="proj-pill">
+    <button class="on" onclick="switchProj('homestay',this)">Monti Homestay</button>
+    <button onclick="switchProj('living',this)">Monti Living</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span id="sync-status" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px">☁️ <span>Siap</span></span>
+    <button onclick="syncNow()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Tarik data terbaru dari Gsheet">🔄 Sync</button>
+    <button onclick="openUrlSetup()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Setup koneksi Google Sheet">⚙️ Setup</button>
+    <button onclick="resetAllData()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Reset semua data">🗑 Reset</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="ntab on" onclick="switchTab('dash',this)">🏠 Dashboard</div>
+  <div class="ntab" onclick="switchTab('sow',this)">📋 SOW</div>
+  <div class="ntab" onclick="switchTab('tl',this)">📅 Timeline</div>
+  <div class="ntab" onclick="switchTab('kpi',this)">📊 KPI</div>
+</div>
+
+<div class="main">
+
+<!-- ===== DASHBOARD ===== -->
+<div id="panel-dash" class="panel on">
+  <div class="dash-top" id="dash-stats"></div>
+  <div class="dash-mid">
+    <div class="dash-member-card" id="dash-hasan"></div>
+    <div class="dash-member-card" id="dash-diwa"></div>
+    <div class="dash-member-card" id="dash-vicky"></div>
+  </div>
+  <div class="dash-tl">
+    <div class="dash-tl-head">
+      <div class="dash-tl-title">Timeline — item terdekat</div>
+      <span style="font-size:12px;color:var(--muted)">Maks 5 item aktif/mendatang</span>
+    </div>
+    <div id="dash-tl-list"></div>
+  </div>
+  <div class="dash-kpi">
+    <div class="dkpi-head"><div class="dkpi-title">KPI snapshot</div></div>
+    <div id="dash-kpi-list"></div>
+  </div>
+</div>
+
+<!-- ===== SOW ===== -->
+<div id="panel-sow" class="panel">
+  <div class="sow-summary">
+    <div class="ss-item"><div class="ss-label">Total task</div><div class="ss-val" id="sow-total">0</div></div>
+    <div class="ss-div"></div>
+    <div class="ss-item"><div class="ss-label">Selesai</div><div class="ss-val" style="color:var(--grn)" id="sow-done">0</div></div>
+    <div class="ss-div"></div>
+    <div class="ss-item" style="flex:2;min-width:160px">
+      <div class="ss-label">Progress keseluruhan</div>
+      <div class="ss-val" id="sow-pct">0%</div>
+      <div style="margin-top:6px"><div class="pw" style="height:6px"><div class="pf pfA" id="sow-bar" style="width:0%"></div></div></div>
+    </div>
+  </div>
+  <div class="sow-grid">
+    <!-- HASAN -->
+    <div class="card">
+      <div class="mc-top">
+        <div class="av avH">HF</div>
+        <div>
+          <div class="mc-name">Hasan</div>
+          <div class="mc-role-wrap">
+            <input class="inline-edit" id="hasan-role-input" value="GTM · Performance · Website" onchange="saveRole('hasan')" style="width:200px"/>
+            <button class="role-edit-btn" onclick="focusRole('hasan')" title="Edit peran">✏️</button>
+          </div>
+        </div>
+        <div class="mc-pct" style="color:var(--H)" id="hasan-pct">0%</div>
+      </div>
+      <div class="mc-chips" id="hasan-chips">
+        <span class="chip">GTM Strategy</span><span class="chip">Meta Ads</span>
+        <span class="chip">Website</span><span class="chip">Tracking</span>
+        <span class="chip">Performance</span>
+        <span class="chip chip-add" onclick="addChip('hasan')" title="Tambah tag">+ Tag</span>
+      </div>
+      <div class="mc-prog">
+        <div class="mc-prog-labels"><span id="hasan-done-lbl">0/0 task</span></div>
+        <div class="pw"><div class="pf pfH" id="hasan-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="tl-area-label">DAFTAR TASK</div>
+        <div class="task-list" id="hasan-tasks"></div>
+        <div class="add-form">
+          <input class="add-inp" id="hasan-inp" placeholder="Tambah task..." onkeydown="if(event.key==='Enter')addTask('hasan')"/>
+          <select class="add-sel" id="hasan-psel"><option value="high">🔴</option><option value="mid" selected>🟡</option><option value="low">⚪</option></select>
+          <button class="add-btn" onclick="addTask('hasan')">+ Tambah</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIWA -->
+    <div class="card">
+      <div class="mc-top">
+        <div class="av avD">DW</div>
+        <div>
+          <div class="mc-name">Diwa</div>
+          <div class="mc-role-wrap">
+            <input class="inline-edit" id="diwa-role-input" value="Creative · Social Media" onchange="saveRole('diwa')" style="width:200px"/>
+            <button class="role-edit-btn" onclick="focusRole('diwa')" title="Edit peran">✏️</button>
+          </div>
+        </div>
+        <div class="mc-pct" style="color:var(--D)" id="diwa-pct">0%</div>
+      </div>
+      <div class="mc-chips" id="diwa-chips">
+        <span class="chip">Brand Visual</span><span class="chip">Instagram</span>
+        <span class="chip">TikTok</span><span class="chip">Copywriting</span>
+        <span class="chip">Konten</span>
+        <span class="chip chip-add" onclick="addChip('diwa')" title="Tambah tag">+ Tag</span>
+      </div>
+      <div class="mc-prog">
+        <div class="mc-prog-labels"><span id="diwa-done-lbl">0/0 task</span></div>
+        <div class="pw"><div class="pf pfD" id="diwa-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="tl-area-label">DAFTAR TASK</div>
+        <div class="task-list" id="diwa-tasks"></div>
+        <div class="add-form">
+          <input class="add-inp" id="diwa-inp" placeholder="Tambah task..." onkeydown="if(event.key==='Enter')addTask('diwa')"/>
+          <select class="add-sel" id="diwa-psel"><option value="high">🔴</option><option value="mid" selected>🟡</option><option value="low">⚪</option></select>
+          <button class="add-btn" onclick="addTask('diwa')">+ Tambah</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VICKY -->
+    <div class="card">
+      <div class="mc-top">
+        <div class="av avV">VK</div>
+        <div>
+          <div class="mc-name">Vicky</div>
+          <div class="mc-role-wrap">
+            <input class="inline-edit" id="vicky-role-input" value="—" onchange="saveRole('vicky')" style="width:200px"/>
+            <button class="role-edit-btn" onclick="focusRole('vicky')" title="Edit peran">✏️</button>
+          </div>
+        </div>
+        <div class="mc-pct" style="color:var(--V)" id="vicky-pct">0%</div>
+      </div>
+      <div class="mc-chips" id="vicky-chips">
+        <span class="chip chip-add" onclick="promptAddChip('vicky')" title="Tambah tag">+ Tag</span>
+      </div>
+      <div class="mc-prog">
+        <div class="mc-prog-labels"><span id="vicky-done-lbl">0/0 task</span></div>
+        <div class="pw"><div class="pf pfV" id="vicky-bar" style="width:0%"></div></div>
+      </div>
+      <div class="mc-tasks">
+        <div class="tl-area-label">DAFTAR TASK</div>
+        <div class="task-list" id="vicky-tasks"></div>
+        <div class="add-form">
+          <input class="add-inp" id="vicky-inp" placeholder="Tambah task..." onkeydown="if(event.key==='Enter')addTask('vicky')"/>
+          <select class="add-sel" id="vicky-psel"><option value="high">🔴</option><option value="mid" selected>🟡</option><option value="low">⚪</option></select>
+          <button class="add-btn" onclick="addTask('vicky')">+ Tambah</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TIMELINE ===== -->
+<div id="panel-tl" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-size:15px;font-weight:600">Timeline Project</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:1px" id="tl-date-range">—</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)"><span style="width:10px;height:10px;border-radius:2px;background:var(--H);display:inline-block"></span>Hasan</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)"><span style="width:10px;height:10px;border-radius:2px;background:var(--D);display:inline-block"></span>Diwa</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)"><span style="width:10px;height:10px;border-radius:2px;background:var(--V);display:inline-block"></span>Vicky</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)"><span style="width:10px;height:10px;border-radius:2px;background:var(--acc);display:inline-block"></span>Bersama</span>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-tl')">+ Tambah item</button>
+    </div>
+  </div>
+  <div class="card" style="overflow:hidden;margin-bottom:8px">
+    <div class="tl-scroll"><table class="tl-table" id="tl-tbl"></table></div>
+  </div>
+</div>
+
+<!-- ===== KPI ===== -->
+<div id="panel-kpi" class="panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div><div style="font-size:15px;font-weight:600">KPI & Target</div><div style="font-size:12px;color:var(--muted);margin-top:1px">Update aktual setiap review mingguan</div></div>
+    <button class="btn btn-p btn-sm" onclick="openModal('mo-kpi')">+ Tambah KPI</button>
+  </div>
+  <div class="kpi-stats" id="kpi-stats"></div>
+  <div class="kpi-cols">
+    <div class="kmc">
+      <div class="kmc-h"><div class="av avH" style="width:28px;height:28px;font-size:10px">HF</div><div class="kmc-name" style="color:var(--H)">Hasan — Performance</div><button class="btn btn-g btn-sm" onclick="openKpiM('hasan')" style="margin-left:auto">+ KPI</button></div>
+      <div id="hasan-kpi"></div>
+    </div>
+    <div class="kmc">
+      <div class="kmc-h"><div class="av avD" style="width:28px;height:28px;font-size:10px">DW</div><div class="kmc-name" style="color:var(--D)">Diwa — Creative</div><button class="btn btn-g btn-sm" onclick="openKpiM('diwa')" style="margin-left:auto">+ KPI</button></div>
+      <div id="diwa-kpi"></div>
+    </div>
+    <div class="kmc">
+      <div class="kmc-h"><div class="av avV" style="width:28px;height:28px;font-size:10px">VK</div><div class="kmc-name" style="color:var(--V)">Vicky</div><button class="btn btn-g btn-sm" onclick="openKpiM('vicky')" style="margin-left:auto">+ KPI</button></div>
+      <div id="vicky-kpi"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL: Timeline item -->
+<div class="mo" id="mo-tl">
+  <div class="mdl mdl-lg">
+    <div class="mh"><div class="mt" id="mo-tl-title">Tambah item timeline</div><button class="mx" onclick="closeModal('mo-tl')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Nama task / deliverable</label><input class="fi" id="tl-name" placeholder="cth. Setup Meta Pixel"/></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Dikerjakan oleh</label>
+          <select class="fs" id="tl-who"><option value="hasan">Hasan</option><option value="diwa">Diwa</option><option value="vicky">Vicky</option><option value="both">Bersama</option></select>
+        </div>
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fs" id="tl-status"><option value="done">✅ Selesai</option><option value="prog">🔵 On track</option><option value="pend" selected>⬜ Belum mulai</option><option value="late">🔴 Terlambat</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tanggal mulai</label><input class="fi" type="date" id="tl-start"/></div>
+        <div class="fg"><label class="fl">Tanggal selesai</label><input class="fi" type="date" id="tl-end"/></div>
+      </div>
+      <div class="fg"><label class="fl">Catatan (opsional)</label><input class="fi" id="tl-note" placeholder="Catatan singkat..."/></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal('mo-tl')">Batal</button>
+      <button class="btn btn-p" id="tl-save-btn" onclick="saveTlItem()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: KPI -->
+<div class="mo" id="mo-kpi">
+  <div class="mdl">
+    <div class="mh"><div class="mt">Tambah KPI</div><button class="mx" onclick="closeModal('mo-kpi')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Untuk siapa</label>
+        <select class="fs" id="kpi-who"><option value="hasan">Hasan</option><option value="diwa">Diwa</option><option value="vicky">Vicky</option></select>
+      </div>
+      <div class="fg"><label class="fl">Nama metrik</label><input class="fi" id="kpi-met" placeholder="cth. ROAS, Engagement Rate, CTR"/></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Target</label><input class="fi" id="kpi-tg" placeholder="cth. >2.5x"/></div>
+        <div class="fg"><label class="fl">Aktual saat ini</label><input class="fi" id="kpi-ac" placeholder="cth. —"/></div>
+      </div>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fs" id="kpi-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-kpi')">Batal</button><button class="btn btn-p" onclick="addKPI()">Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Edit KPI -->
+<div class="mo" id="mo-kpi-ed">
+  <div class="mdl">
+    <div class="mh"><div class="mt">Update KPI</div><button class="mx" onclick="closeModal('mo-kpi-ed')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Metrik</label><input class="fi" id="ke-met" readonly style="background:var(--s2)"/></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Target</label><input class="fi" id="ke-tg"/></div>
+        <div class="fg"><label class="fl">Aktual terbaru</label><input class="fi" id="ke-ac"/></div>
+      </div>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fs" id="ke-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+      </div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-kpi-ed')">Batal</button><button class="btn btn-p" onclick="saveKPIEdit()">Update</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Edit TL -->
+<div class="mo" id="mo-tl-ed">
+  <div class="mdl mdl-lg">
+    <div class="mh"><div class="mt">Edit item timeline</div><button class="mx" onclick="closeModal('mo-tl-ed')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Nama task</label><input class="fi" id="te-name"/></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Dikerjakan oleh</label>
+          <select class="fs" id="te-who"><option value="hasan">Hasan</option><option value="diwa">Diwa</option><option value="vicky">Vicky</option><option value="both">Bersama</option></select>
+        </div>
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fs" id="te-status"><option value="done">✅ Selesai</option><option value="prog">🔵 On track</option><option value="pend">⬜ Belum mulai</option><option value="late">🔴 Terlambat</option></select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tanggal mulai</label><input class="fi" type="date" id="te-start"/></div>
+        <div class="fg"><label class="fl">Tanggal selesai</label><input class="fi" type="date" id="te-end"/></div>
+      </div>
+      <div class="fg"><label class="fl">Catatan</label><input class="fi" id="te-note"/></div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-tl-ed')">Batal</button><button class="btn btn-p" onclick="saveTlEdit()">Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Role edit -->
+<div class="mo" id="mo-role">
+  <div class="mdl">
+    <div class="mh"><div class="mt">Edit peran & tag</div><button class="mx" onclick="closeModal('mo-role')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Nama peran / deskripsi singkat</label><input class="fi" id="role-text" placeholder="cth. GTM · Performance · Website"/></div>
+      <div class="fg"><label class="fl">Tags (pisahkan dengan koma)</label><input class="fi" id="role-tags" placeholder="cth. GTM Strategy, Meta Ads, Website"/></div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-role')">Batal</button><button class="btn btn-p" onclick="saveRoleModal()">Simpan</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+
+// ==================== CONFIG ====================
+let GAS_URL = localStorage.getItem('monti_gas_url') || '';
+
+// ==================== STATE & STORAGE ====================
+const STORAGE_KEY = 'monti_pm_v1';
+const DEFAULT_STATE = {
+  homestay:{ hasan:{role:'GTM · Performance · Website',tags:['GTM Strategy','Meta Ads','Website','Tracking','Performance'],tasks:[]}, diwa:{role:'Creative · Social Media',tags:['Brand Visual','Instagram','TikTok','Copywriting','Konten'],tasks:[]}, vicky:{role:'—',tags:[],tasks:[]}, timeline:[], kpi:{hasan:[],diwa:[],vicky:[]} },
+  living:{ hasan:{role:'GTM · Performance · Website',tags:['GTM Strategy','Google Ads','Website','Tracking','Performance'],tasks:[]}, diwa:{role:'Creative · Social Media',tags:['Brand Visual','Instagram','TikTok','Konten'],tasks:[]}, vicky:{role:'—',tags:[],tasks:[]}, timeline:[], kpi:{hasan:[],diwa:[],vicky:[]} }
+};
+
+function mergeDefaults(saved) {
+  const def = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  ['homestay','living'].forEach(proj => {
+    if (!saved[proj]) saved[proj] = def[proj];
+    ['hasan','diwa','vicky'].forEach(who => {
+      if (!saved[proj][who]) saved[proj][who] = def[proj][who];
+      if (!saved[proj][who].tags) saved[proj][who].tags = [];
+      if (!saved[proj][who].tasks) saved[proj][who].tasks = [];
+      if (!saved[proj][who].role) saved[proj][who].role = '—';
+    });
+    if (!saved[proj].timeline) saved[proj].timeline = [];
+    if (!saved[proj].kpi) saved[proj].kpi = {hasan:[],diwa:[],vicky:[]};
+    ['hasan','diwa','vicky'].forEach(who => { if (!saved[proj].kpi[who]) saved[proj].kpi[who] = []; });
+  });
+  return saved;
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return mergeDefaults(JSON.parse(raw));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+}
+function saveLocal(d) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {} }
+
+// ---- GSheet sync ----
+let syncTimer = null;
+function setSyncStatus(s, msg) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const cfg = {
+    idle:    { icon:'☁️',  text:'Tersimpan',       color:'var(--muted)' },
+    saving:  { icon:'⏳',  text:'Menyimpan...',     color:'var(--yel)'   },
+    saved:   { icon:'✅',  text:'Tersinkron',        color:'var(--grn)'   },
+    error:   { icon:'⚠️',  text:msg||'Gagal sync',  color:'var(--red)'   },
+    offline: { icon:'📴',  text:'Mode offline',     color:'var(--muted)' },
+    loading: { icon:'🔄',  text:'Memuat data...',   color:'var(--H)'     },
+  };
+  const c = cfg[s] || cfg.idle;
+  el.innerHTML = c.icon + ' <span>' + c.text + '</span>';
+  el.style.color = c.color;
+}
+
+async function pushToSheet(data) {
+  if (!GAS_URL) { saveLocal(data); setSyncStatus('offline'); return; }
+  setSyncStatus('saving');
+  saveLocal(data);
+  try {
+    await fetch(GAS_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({homestay: data.homestay, living: data.living})
+    });
+    setSyncStatus('saved');
+    setTimeout(()=>setSyncStatus('idle'), 3000);
+  } catch(e) { setSyncStatus('error','Gagal—pakai lokal'); }
+}
+
+async function pullFromSheet() {
+  if (!GAS_URL) { setSyncStatus('offline'); return loadLocal(); }
+  setSyncStatus('loading');
+  try {
+    const res = await fetch(GAS_URL + '?t=' + Date.now());
+    const json = await res.json();
+    if (json.status === 'ok' && json.data) {
+      const remote = mergeDefaults({
+        homestay: json.data.homestay || {},
+        living:   json.data.living   || {}
+      });
+      saveLocal(remote);
+      setSyncStatus('saved');
+      setTimeout(()=>setSyncStatus('idle'), 2500);
+      return remote;
+    }
+  } catch(e) { setSyncStatus('offline'); }
+  return loadLocal();
+}
+
+function persist() {
+  saveLocal(S);
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => pushToSheet(S), 1200);
+}
+
+function openUrlSetup() {
+  document.getElementById('gas-url-input').value = GAS_URL;
+  openModal('mo-gas');
+}
+function saveGasUrl() {
+  const url = document.getElementById('gas-url-input').value.trim();
+  GAS_URL = url;
+  localStorage.setItem('monti_gas_url', url);
+  closeModal('mo-gas');
+  if (url) { toast('✅ URL tersimpan — menarik data...'); initApp(); }
+  else { setSyncStatus('offline'); toast('Mode offline aktif'); }
+}
+function syncNow() { pullFromSheet().then(data => { Object.assign(S, data); renderAll(); toast('Data diperbarui dari Gsheet'); }); }
+
+const S = loadLocal();
+let P='homestay', kpiEditRef={who:null,idx:null}, kpiModalWho=null, tlEditIdx=null, roleEditWho=null;
+
+// ==================== UTILS ====================
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.mo').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+function fmtDate(d){if(!d)return'—';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDateShort(d){if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short'})}
+function today(){return new Date().toISOString().split('T')[0]}
+function parseD(s){return s?new Date(s+'T00:00:00'):null}
+
+// ==================== PROJECT SWITCH ====================
+function switchProj(p,btn){
+  P=p;
+  document.getElementById('hdr-pname').textContent=p==='homestay'?'Monti Homestay':'Monti Living';
+  document.querySelectorAll('.proj-pill button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  syncRoleInputs();
+  renderAll();
+}
+
+// ==================== TAB SWITCH ====================
+function switchTab(t,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(n=>n.classList.remove('on'));
+  document.getElementById('panel-'+t).classList.add('on');
+  el.classList.add('on');
+  renderAll();
+}
+
+function renderAll(){renderDash();renderSOW();renderTimeline();renderKPI()}
+
+// ==================== ROLE EDIT ====================
+function focusRole(who){
+  roleEditWho=who;
+  const d=S[P][who];
+  document.getElementById('role-text').value=d.role;
+  document.getElementById('role-tags').value=d.tags.join(', ');
+  openModal('mo-role');
+}
+function saveRoleModal(){
+  const who=roleEditWho;
+  S[P][who].role=document.getElementById('role-text').value.trim()||S[P][who].role;
+  const tagsRaw=document.getElementById('role-tags').value;
+  S[P][who].tags=tagsRaw.split(',').map(t=>t.trim()).filter(Boolean);
+  closeModal('mo-role');
+  syncRoleInputs();
+  renderChips(who);
+  renderDash();
+  persist();
+  toast('Peran diupdate');
+}
+function saveRole(who){S[P][who].role=document.getElementById(who+'-role-input').value;persist();renderDash()}
+function syncRoleInputs(){
+  ['hasan','diwa','vicky'].forEach(w=>{
+    const el=document.getElementById(w+'-role-input');
+    if(el)el.value=S[P][w].role;
+  });
+}
+
+function renderChips(who){
+  const el=document.getElementById(who+'-chips');
+  if(!el)return;
+  const tags=S[P][who].tags;
+  el.innerHTML=tags.map((t,i)=>`<span class="chip" style="display:inline-flex;align-items:center;gap:4px">${t}<button onclick="deleteChip('${who}',${i})" style="border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:11px;padding:0;line-height:1;margin-left:1px" title="Hapus tag">✕</button></span>`).join('')+`<span class="chip chip-add" onclick="promptAddChip('${who}')" title="Tambah tag">+ Tag</span>`;
+}
+function deleteChip(who,i){
+  S[P][who].tags.splice(i,1);
+  renderChips(who);
+  persist();
+  toast('Tag dihapus');
+}
+function promptAddChip(who){
+  const tag=prompt('Nama tag baru:');
+  if(!tag||!tag.trim())return;
+  S[P][who].tags.push(tag.trim());
+  renderChips(who);
+  persist();
+  toast('Tag ditambahkan');
+}
+
+// ==================== SOW ====================
+function addTask(who){
+  const inp=document.getElementById(who+'-inp');
+  const val=inp.value.trim();if(!val)return;
+  const prio=document.getElementById(who+'-psel').value;
+  S[P][who].tasks.push({text:val,done:false,prio});
+  inp.value='';inp.focus();
+  renderSOW();renderDash();persist();toast('Task ditambahkan');
+}
+function toggleTask(who,i){S[P][who].tasks[i].done=!S[P][who].tasks[i].done;renderSOW();renderDash();persist()}
+function deleteTask(who,i){S[P][who].tasks.splice(i,1);renderSOW();renderDash();persist();toast('Task dihapus')}
+
+function renderSOW(){
+  ['hasan','diwa','vicky'].forEach(who=>{
+    const tasks=S[P][who].tasks;
+    const done=tasks.filter(t=>t.done).length,total=tasks.length;
+    const pct=total?Math.round(done/total*100):0;
+    document.getElementById(who+'-pct').textContent=pct+'%';
+    document.getElementById(who+'-bar').style.width=pct+'%';
+    document.getElementById(who+'-done-lbl').textContent=done+'/'+total+' task selesai';
+    const list=document.getElementById(who+'-tasks');
+    if(!list)return;
+    if(!tasks.length){list.innerHTML='<div class="empty-t">Belum ada task. Tambah di bawah.</div>';return}
+    const pL={high:'ph',mid:'pm',low:'pl'};const pN={high:'Tinggi',mid:'Sedang',low:'Rendah'};
+    list.innerHTML=tasks.map((t,i)=>`<div class="task-item" onclick="toggleTask('${who}',${i})">
+      <div class="tcb ${t.done?'ck':''}"></div>
+      <div class="ttx">
+        <div class="ttm ${t.done?'done':''}">${t.text}</div>
+        <div class="tmt"><span class="pd ${pL[t.prio]||'pl'}"></span><span style="font-size:10px;color:var(--muted)">${pN[t.prio]||''}</span></div>
+      </div>
+      <button class="tdel" onclick="event.stopPropagation();deleteTask('${who}',${i})" title="Hapus">✕</button>
+    </div>`).join('');
+  });
+  const all=[...S[P].hasan.tasks,...S[P].diwa.tasks,...S[P].vicky.tasks];
+  const tot=all.length,dn=all.filter(t=>t.done).length,pct=tot?Math.round(dn/tot*100):0;
+  const el=id=>document.getElementById(id);
+  el('sow-total').textContent=tot;el('sow-done').textContent=dn;
+  el('sow-pct').textContent=pct+'%';el('sow-bar').style.width=pct+'%';
+}
+
+// ==================== TIMELINE ====================
+let tlEditData=null;
+
+function saveTlItem(){
+  const name=document.getElementById('tl-name').value.trim();
+  const start=document.getElementById('tl-start').value;
+  const end=document.getElementById('tl-end').value;
+  if(!name||!start||!end){toast('Nama & tanggal wajib diisi');return}
+  if(end<start){toast('Tanggal selesai harus setelah mulai');return}
+  const who=document.getElementById('tl-who').value;
+  const status=document.getElementById('tl-status').value;
+  const note=document.getElementById('tl-note').value.trim();
+  S[P].timeline.push({name,who,status,start,end,note});
+  S[P].timeline.sort((a,b)=>a.start.localeCompare(b.start));
+  document.getElementById('tl-name').value='';document.getElementById('tl-note').value='';
+  document.getElementById('tl-start').value='';document.getElementById('tl-end').value='';
+  closeModal('mo-tl');renderTimeline();renderDash();persist();toast('Item ditambahkan');
+}
+
+function openTlEdit(idx){
+  tlEditIdx=idx;
+  const it=S[P].timeline[idx];
+  document.getElementById('te-name').value=it.name;
+  document.getElementById('te-who').value=it.who;
+  document.getElementById('te-status').value=it.status;
+  document.getElementById('te-start').value=it.start;
+  document.getElementById('te-end').value=it.end;
+  document.getElementById('te-note').value=it.note||'';
+  openModal('mo-tl-ed');
+}
+function saveTlEdit(){
+  const name=document.getElementById('te-name').value.trim();
+  const start=document.getElementById('te-start').value;
+  const end=document.getElementById('te-end').value;
+  if(!name||!start||!end){toast('Nama & tanggal wajib diisi');return}
+  const it=S[P].timeline[tlEditIdx];
+  it.name=name;it.who=document.getElementById('te-who').value;
+  it.status=document.getElementById('te-status').value;
+  it.start=start;it.end=end;it.note=document.getElementById('te-note').value;
+  S[P].timeline.sort((a,b)=>a.start.localeCompare(b.start));
+  closeModal('mo-tl-ed');renderTimeline();renderDash();persist();toast('Item diupdate');
+}
+function deleteTlItem(idx){S[P].timeline.splice(idx,1);renderTimeline();renderDash();persist();toast('Item dihapus')}
+
+function renderTimeline(){
+  const items=S[P].timeline;
+  const tbl=document.getElementById('tl-tbl');
+  const rng=document.getElementById('tl-date-range');
+  if(!tbl)return;
+
+  if(!items.length){
+    tbl.innerHTML='<thead><tr><th colspan="3" style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Belum ada item. Klik "+ Tambah item".</th></tr></thead>';
+    rng.textContent='—';return;
+  }
+
+  // Compute date range — span all items
+  const starts=items.map(i=>i.start).sort();
+  const ends=items.map(i=>i.end).sort();
+  const firstDate=parseD(starts[0]);
+  const lastDate=parseD(ends[ends.length-1]);
+
+  // Build week columns (Mon–Sun buckets)
+  const weeks=[];
+  let cur=new Date(firstDate);
+  // Go to Monday of first week
+  cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
+  while(cur<=lastDate){
+    const wStart=new Date(cur);
+    const wEnd=new Date(cur);wEnd.setDate(wEnd.getDate()+6);
+    weeks.push({start:wStart,end:wEnd});
+    cur.setDate(cur.getDate()+7);
+  }
+  if(weeks.length>16)weeks.splice(16); // max 16 cols
+
+  const todayStr=today();
+  const todayD=parseD(todayStr);
+
+  rng.textContent=fmtDate(starts[0])+' — '+fmtDate(ends[ends.length-1]);
+
+  // Header
+  const fmtWk=(d)=>d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
+  let thead=`<thead><tr><th class="lh">Task / Deliverable</th>`;
+  weeks.forEach(w=>{
+    const isNow=todayD>=w.start&&todayD<=w.end;
+    thead+=`<th${isNow?' class="today-col"':''} style="min-width:62px">${fmtWk(w.start)}</th>`;
+  });
+  thead+=`</tr></thead>`;
+
+  // Rows
+  const stMap={done:'b-done',prog:'b-prog',pend:'b-pend',late:'b-late'};
+  const stLbl={done:'Selesai',prog:'On track',pend:'Belum mulai',late:'Terlambat'};
+  const whoMap={hasan:'tbH',diwa:'tbD',vicky:'tbV',both:'tbB'};
+  const whoLbl={hasan:'Hasan',diwa:'Diwa',vicky:'Vicky',both:'Bersama'};
+  const whoBdg={hasan:'b-H',diwa:'b-D',vicky:'b-V',both:'b-both'};
+
+  let tbody='<tbody>';
+  items.forEach((it,idx)=>{
+    const iStart=parseD(it.start);
+    const iEnd=parseD(it.end);
+    const isPast=iEnd<todayD;
+    const trClass=isPast?'tl-past':'';
+
+    let cells='';
+    let i=0;
+    while(i<weeks.length){
+      const w=weeks[i];
+      const overlap=iStart<=w.end&&iEnd>=w.start;
+      if(overlap){
+        // Count consecutive overlapping weeks
+        let span=1;
+        while(i+span<weeks.length&&iStart<=weeks[i+span].end&&iEnd>=weeks[i+span].start)span++;
+        const isNow=todayD>=w.start&&todayD<=weeks[i+span-1].end;
+        cells+=`<td colspan="${span}"${isNow?' class="tl-today-marker"':''}><div class="tl-bar ${whoMap[it.who]}">${it.name}</div></td>`;
+        i+=span;
+      } else {
+        const isNow=todayD>=w.start&&todayD<=w.end;
+        cells+=`<td${isNow?' class="tl-today-marker"':''}></td>`;i++;
+      }
+    }
+
+    const noteHtml=it.note?`<span style="font-size:10px;color:var(--muted);margin-left:4px">${it.note}</span>`:'';
+    tbody+=`<tr class="${trClass}">
+      <td class="lc">
+        <div class="tl-task-name">${it.name}</div>
+        <div class="tl-task-who">
+          <span class="bdg ${whoBdg[it.who]}">${whoLbl[it.who]}</span>
+          <span class="bdg ${stMap[it.status]}">${stLbl[it.status]}</span>
+          <span style="font-size:10px;color:var(--muted)">${fmtDateShort(it.start)} – ${fmtDateShort(it.end)}</span>
+          ${noteHtml}
+        </div>
+      </td>
+      ${cells}
+      <td style="padding:0 8px">
+        <div style="display:flex;gap:3px">
+          <button class="btn-ic" onclick="openTlEdit(${idx})">✏</button>
+          <button class="btn-ic" onclick="deleteTlItem(${idx})" style="color:var(--red)">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  tbody+='</tbody>';
+
+  tbl.innerHTML=thead+tbody;
+}
+
+// ==================== KPI ====================
+function openKpiM(who){kpiModalWho=who;document.getElementById('kpi-who').value=who;openModal('mo-kpi')}
+function addKPI(){
+  const who=document.getElementById('kpi-who').value;
+  const met=document.getElementById('kpi-met').value.trim();
+  const tg=document.getElementById('kpi-tg').value.trim();
+  const ac=document.getElementById('kpi-ac').value.trim()||'—';
+  const st=document.getElementById('kpi-st').value;
+  if(!met||!tg){toast('Metrik dan target wajib diisi');return}
+  S[P].kpi[who].push({met,tg,ac,st});
+  ['kpi-met','kpi-tg','kpi-ac'].forEach(id=>document.getElementById(id).value='');
+  closeModal('mo-kpi');renderKPI();renderDash();persist();toast('KPI ditambahkan');
+}
+function openKpiEdit(who,i){
+  kpiEditRef={who,idx:i};
+  const k=S[P].kpi[who][i];
+  document.getElementById('ke-met').value=k.met;
+  document.getElementById('ke-tg').value=k.tg;
+  document.getElementById('ke-ac').value=k.ac;
+  document.getElementById('ke-st').value=k.st;
+  openModal('mo-kpi-ed');
+}
+function saveKPIEdit(){
+  const {who,idx}=kpiEditRef;
+  const k=S[P].kpi[who][idx];
+  k.tg=document.getElementById('ke-tg').value;
+  k.ac=document.getElementById('ke-ac').value;
+  k.st=document.getElementById('ke-st').value;
+  closeModal('mo-kpi-ed');renderKPI();renderDash();persist();toast('KPI diupdate');
+}
+function deleteKPI(who,i){S[P].kpi[who].splice(i,1);renderKPI();renderDash();persist();toast('KPI dihapus')}
+
+function renderKPI(){
+  const sL={done:'Tercapai',prog:'On track',pend:'Belum mulai',late:'Di bawah target'};
+  const sC={done:'b-done',prog:'b-prog',pend:'b-pend',late:'b-late'};
+  ['hasan','diwa','vicky'].forEach(who=>{
+    const list=S[P].kpi[who];
+    const el=document.getElementById(who+'-kpi');
+    if(!el)return;
+    if(!list.length){el.innerHTML='<div class="no-kpi">Belum ada KPI. Klik "+ KPI".</div>';return}
+    el.innerHTML=list.map((k,i)=>`<div class="kpi-row">
+      <span class="kpi-m">${k.met}</span>
+      <span class="kpi-tg">${k.tg}</span>
+      <span class="kpi-ac">${k.ac}</span>
+      <span class="bdg ${sC[k.st]}">${sL[k.st]}</span>
+      <button class="btn-ic" onclick="openKpiEdit('${who}',${i})">✏</button>
+      <button class="btn-ic" onclick="deleteKPI('${who}',${i})" style="color:var(--red)">✕</button>
+    </div>`).join('');
+  });
+  // Stats
+  const all=[...S[P].kpi.hasan,...S[P].kpi.diwa,...S[P].kpi.vicky];
+  const tot=all.length,dn=all.filter(k=>k.st==='done').length,pg=all.filter(k=>k.st==='prog').length,lt=all.filter(k=>k.st==='late').length;
+  const pct=tot?Math.round(dn/tot*100):0;
+  const el=document.getElementById('kpi-stats');
+  if(!el)return;
+  el.innerHTML=`
+    <div class="kstat"><div class="kstat-l">Total KPI</div><div class="kstat-v">${tot}</div><div class="kstat-s">Hasan + Diwa</div></div>
+    <div class="kstat"><div class="kstat-l">Tercapai</div><div class="kstat-v" style="color:var(--grn)">${dn}</div><div class="kstat-s">${pct}% dari total</div><div class="kstat-b"><div class="kstat-bf" style="width:${pct}%;background:var(--grn)"></div></div></div>
+    <div class="kstat"><div class="kstat-l">On track</div><div class="kstat-v" style="color:var(--H)">${pg}</div><div class="kstat-s">${tot?Math.round(pg/tot*100):0}% dari total</div><div class="kstat-b"><div class="kstat-bf" style="width:${tot?Math.round(pg/tot*100):0}%;background:var(--H)"></div></div></div>
+    <div class="kstat"><div class="kstat-l">Di bawah target</div><div class="kstat-v" style="color:var(--red)">${lt}</div><div class="kstat-s">${tot?Math.round(lt/tot*100):0}% dari total</div><div class="kstat-b"><div class="kstat-bf" style="width:${tot?Math.round(lt/tot*100):0}%;background:var(--red)"></div></div></div>`;
+}
+
+// ==================== DASHBOARD ====================
+function renderDash(){
+  const p=S[P];
+  const allT=[...p.hasan.tasks,...p.diwa.tasks,...p.vicky.tasks];
+  const tot=allT.length,dn=allT.filter(t=>t.done).length;
+  const pct=tot?Math.round(dn/tot*100):0;
+  const allK=[...p.kpi.hasan,...p.kpi.diwa,...p.kpi.vicky];
+  const kDone=allK.filter(k=>k.st==='done').length;
+  const tlAct=p.timeline.filter(i=>i.status==='prog'||i.status==='late').length;
+
+  // Stats row
+  const statsEl=document.getElementById('dash-stats');
+  if(statsEl)statsEl.innerHTML=`
+    <div class="stat-card">
+      <div class="stat-label">Progress project</div>
+      <div class="stat-val">${pct}<span style="font-size:16px;color:var(--muted)">%</span></div>
+      <div class="stat-sub">${dn} dari ${tot} task selesai</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:var(--acc)"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Task selesai</div>
+      <div class="stat-val" style="color:var(--grn)">${dn}</div>
+      <div class="stat-sub">Sisa ${tot-dn} task</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">KPI tercapai</div>
+      <div class="stat-val" style="color:var(--H)">${kDone}<span style="font-size:16px;color:var(--muted)">/${allK.length}</span></div>
+      <div class="stat-sub">${allK.length?Math.round(kDone/allK.length*100):0}% dari total KPI</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Item aktif di timeline</div>
+      <div class="stat-val" style="color:var(--yel)">${tlAct}</div>
+      <div class="stat-sub">${p.timeline.length} total item</div>
+    </div>`;
+
+  // Member cards
+  ['hasan','diwa','vicky'].forEach(who=>{
+    const tasks=p[who].tasks;
+    const done=tasks.filter(t=>t.done).length,total=tasks.length;
+    const pct=total?Math.round(done/total*100):0;
+    const high=tasks.filter(t=>!t.done&&t.prio==='high').length;
+    const kpis=p.kpi[who];
+    const kDn=kpis.filter(k=>k.st==='done').length;
+    const el=document.getElementById('dash-'+who);
+    if(!el)return;
+    const cfgMap={hasan:{color:'var(--H)',av:'avH',init:'HF',name:'Hasan'},diwa:{color:'var(--D)',av:'avD',init:'DW',name:'Diwa'},vicky:{color:'var(--V)',av:'avV',init:'VK',name:'Vicky'}};
+    const cfg=cfgMap[who];
+    el.innerHTML=`
+      <div class="dmc-head">
+        <div class="av ${cfg.av}" style="width:34px;height:34px;font-size:11px">${cfg.init}</div>
+        <div><div class="dmc-name">${cfg.name}</div><div class="dmc-role" style="font-size:11px;color:var(--muted)">${p[who].role}</div></div>
+        <div class="dmc-pct" style="color:${cfg.color}">${pct}%</div>
+      </div>
+      <div class="dmc-body">
+        <div style="padding:10px 16px 8px">
+          <div class="pw"><div class="pf" style="width:${pct}%;background:${cfg.color}"></div></div>
+        </div>
+        <div class="dmc-row"><span class="dmc-k">Task selesai</span><span class="dmc-v">${done}/${total}</span></div>
+        <div class="dmc-row"><span class="dmc-k">Prioritas tinggi aktif</span><span class="dmc-v ${high>0?'':''}">⚠️ ${high} task</span></div>
+        <div class="dmc-row"><span class="dmc-k">KPI tercapai</span><span class="dmc-v">${kDn}/${kpis.length}</span></div>
+      </div>`;
+  });
+
+  // Timeline upcoming
+  const todayStr=today();
+  const upcoming=p.timeline
+    .filter(i=>i.end>=todayStr)
+    .sort((a,b)=>a.start.localeCompare(b.start))
+    .slice(0,5);
+  const tlEl=document.getElementById('dash-tl-list');
+  if(tlEl){
+    if(!upcoming.length){
+      tlEl.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Belum ada item timeline aktif.</div>';
+    } else {
+      const stC={done:'b-done',prog:'b-prog',pend:'b-pend',late:'b-late'};
+      const stL={done:'Selesai',prog:'On track',pend:'Belum mulai',late:'Terlambat'};
+      const whC={hasan:'b-H',diwa:'b-D',vicky:'b-V',both:'b-both'};
+      const whL={hasan:'Hasan',diwa:'Diwa',vicky:'Vicky',both:'Bersama'};
+      tlEl.innerHTML=upcoming.map(it=>{
+        const daysLeft=Math.ceil((parseD(it.end)-parseD(todayStr))/(1000*60*60*24));
+        const dLabel=daysLeft<=0?'Hari ini':daysLeft===1?'1 hari lagi':daysLeft+' hari lagi';
+        const dColor=daysLeft<=3?'var(--red)':daysLeft<=7?'var(--yel)':'var(--muted)';
+        return `<div class="dkpi-row">
+          <span class="dkpi-name">${it.name}</span>
+          <span class="bdg ${whC[it.who]}">${whL[it.who]}</span>
+          <span class="bdg ${stC[it.status]}">${stL[it.status]}</span>
+          <span style="font-size:11px;color:${dColor};font-weight:600;white-space:nowrap">${dLabel}</span>
+          <span style="font-size:11px;color:var(--muted);white-space:nowrap">${fmtDateShort(it.start)}–${fmtDateShort(it.end)}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // KPI snapshot
+  const kpiEl=document.getElementById('dash-kpi-list');
+  const allKPI=[...p.kpi.hasan.map(k=>({...k,who:'hasan'})),...p.kpi.diwa.map(k=>({...k,who:'diwa'})),...p.kpi.vicky.map(k=>({...k,who:'vicky'}))];
+  if(kpiEl){
+    if(!allKPI.length){
+      kpiEl.innerHTML='<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">Belum ada KPI. Tambah di tab KPI.</div>';
+    } else {
+      const sC={done:'b-done',prog:'b-prog',pend:'b-pend',late:'b-late'};
+      const sL={done:'Tercapai',prog:'On track',pend:'Belum mulai',late:'Di bawah target'};
+      kpiEl.innerHTML=allKPI.map(k=>`<div class="dkpi-row">
+        <span class="dkpi-name">${k.met}</span>
+        <span class="bdg ${k.who==='hasan'?'b-H':k.who==='diwa'?'b-D':'b-V'}">${k.who==='hasan'?'Hasan':k.who==='diwa'?'Diwa':'Vicky'}</span>
+        <span class="dkpi-target">${k.tg}</span>
+        <span class="dkpi-actual">${k.ac}</span>
+        <span class="bdg ${sC[k.st]}">${sL[k.st]}</span>
+      </div>`).join('');
+    }
+  }
+}
+
+// ==================== INIT ====================
+function resetAllData(){
+  if(!confirm('Reset semua data? Tindakan ini tidak bisa dibatalkan.'))return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('monti_gas_url');
+  location.reload();
+}
+
+async function initApp() {
+  const data = await pullFromSheet();
+  Object.assign(S.homestay, data.homestay);
+  Object.assign(S.living, data.living);
+  syncRoleInputs();
+  renderAll();
+}
+
+initApp();
+</script>
+<!-- MODAL: Google Sheet Setup -->
+<div class="mo" id="mo-gas">
+  <div class="mdl">
+    <div class="mh">
+      <div class="mt">⚙️ Setup Google Sheet Sync</div>
+      <button class="mx" onclick="closeModal('mo-gas')">✕</button>
+    </div>
+    <div class="mb">
+      <div style="background:var(--s2);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--sub);line-height:1.7">
+        <strong>Cara setup (sekali saja):</strong><br/>
+        1. Buka Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1V5oiOkAfIJF4lajqlJgHsy8DrrysloGU7AwcHYV1I-o/edit" target="_blank" style="color:var(--H)">Monti PM — Database</a><br/>
+        2. Klik <strong>Extensions → Apps Script</strong><br/>
+        3. Paste kode dari file <code>monti-pm-apps-script.gs</code> (sudah didownload bersamaan)<br/>
+        4. Klik <strong>Deploy → New deployment → Web App</strong><br/>
+        5. Execute as: <em>Me</em> · Who has access: <em>Anyone</em><br/>
+        6. Copy URL deployment → paste di bawah ini
+      </div>
+      <div class="fg">
+        <label class="fl">URL Apps Script Web App</label>
+        <input class="fi" id="gas-url-input" placeholder="https://script.google.com/macros/s/AKf.../exec"/>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:-8px">Kosongkan untuk mode offline (hanya localStorage)</div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal('mo-gas')">Batal</button>
+      <button class="btn btn-p" onclick="saveGasUrl()">Simpan & Hubungkan</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
