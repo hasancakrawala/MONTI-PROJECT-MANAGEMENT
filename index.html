@@ -242,7 +242,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div style="display:flex;align-items:center;gap:8px">
     <span id="sync-status" style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px">☁️ <span>Siap</span></span>
     <button onclick="syncNow()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Tarik data terbaru dari Gsheet">🔄 Sync</button>
-    <button onclick="openUrlSetup()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Setup koneksi Google Sheet">⚙️ Setup</button>
     <button onclick="resetAllData()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;color:var(--muted);font-family:inherit" title="Reset semua data">🗑 Reset</button>
   </div>
 </div>
@@ -548,7 +547,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 
 // ==================== CONFIG ====================
-let GAS_URL = localStorage.getItem('monti_gas_url') || '';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxy0KuE4Px_mfUTR8NGAOHzyjrT1MNyTO1QR-oxoNQExXxeNiIgLPSbQmnxbia2lCA/exec';
+let GAS_URL = APPS_SCRIPT_URL;
 
 // ==================== STATE & STORAGE ====================
 const STORAGE_KEY = 'monti_pm_v1';
