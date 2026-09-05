@@ -157,13 +157,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .task-list{display:flex;flex-direction:column;gap:4px;margin-bottom:9px;min-height:16px}
 .task-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg);cursor:pointer;transition:border-color .15s}
 .task-item:hover{border-color:var(--border-s)}
-.tcb{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border-s);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.tcb.ck{background:var(--grn);border-color:var(--grn)}.tcb.ck::after{content:'✓';color:#fff;font-size:10px;font-weight:700;line-height:1}
+.tcb{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-s);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.tcb.ck{background:var(--grn);border-color:var(--grn)}.tcb.ck::after{content:'✓';color:#fff;font-size:11px;font-weight:700;line-height:1}
 .ttx{flex:1}
 .ttm{font-size:12px;color:var(--text);line-height:1.35}.ttm.done{text-decoration:line-through;color:var(--muted)}
 .tmt{display:flex;gap:5px;align-items:center;margin-top:2px}
-.tdel{margin-left:auto;padding:2px 5px;border-radius:4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:12px;opacity:0;transition:opacity .15s}
-.task-item:hover .tdel{opacity:1}.tdel:hover{background:var(--redbg);color:var(--red)}
+.task-actions{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0}
+.tact{width:24px;height:24px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--sub);transition:background .15s}
+.tact:disabled{opacity:.3;cursor:not-allowed}
+.tact.tmove:hover:not(:disabled){background:var(--s2)}
+.tact.tedit{color:var(--acc);border-color:var(--acc)}.tact.tedit:hover{background:var(--accbg)}
+.tact.tdel{color:var(--red);border-color:var(--red)}.tact.tdel:hover{background:var(--redbg)}
+.task-item.dragging{opacity:.4}
 .add-form{display:flex;gap:6px}
 .add-inp{flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-family:inherit;color:var(--text);outline:none}
 .add-inp:focus{border-color:var(--acc)}
@@ -185,6 +190,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .tbH{background:var(--H)}.tbD{background:var(--D)}.tbV{background:var(--V)}.tbB{background:var(--acc)}
 .tl-today-marker{background:rgba(38,96,164,.08)}
 .tl-past{opacity:.55}
+.tl-day-wd{font-size:9px;color:var(--muted);font-weight:700}
+.tl-day-num{font-size:13px;color:var(--text);font-weight:700;line-height:1.3}
+.tl-day-mo{font-size:9px;color:var(--muted)}
+.tl-mo-head th{background:var(--s3);font-size:10px;letter-spacing:.4px}
+.tl-nav-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--sub);font-size:13px;display:flex;align-items:center;justify-content:center}.tl-nav-btn:hover{background:var(--s2)}
 
 /* ===== KPI ===== */
 .kpi-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
@@ -409,6 +419,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <button class="btn btn-p btn-sm" onclick="openModal('mo-tl')">+ Tambah item</button>
     </div>
   </div>
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px">
+    <button class="tl-nav-btn" onclick="tlNavPrev()" title="Bulan sebelumnya">←</button>
+    <span id="tl-nav-label" style="font-size:13px;font-weight:600;min-width:200px;text-align:center">—</span>
+    <button class="tl-nav-btn" onclick="tlNavNext()" title="Bulan berikutnya">→</button>
+  </div>
   <div class="card" style="overflow:hidden;margin-bottom:8px">
     <div class="tl-scroll"><table class="tl-table" id="tl-tbl"></table></div>
   </div>
@@ -422,16 +437,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
   <div class="kpi-stats" id="kpi-stats"></div>
   <div class="kpi-cols">
-    <div class="kmc">
-      <div class="kmc-h"><div class="av avH" style="width:28px;height:28px;font-size:10px">HF</div><div class="kmc-name" style="color:var(--H)">Hasan — Performance</div><button class="btn btn-g btn-sm" onclick="openKpiM('hasan')" style="margin-left:auto">+ KPI</button></div>
+    <div class="kmc" style="border-left:4px solid var(--H)">
+      <div class="kmc-h" style="background:var(--Hbg)"><div class="av avH" style="width:28px;height:28px;font-size:10px">HF</div><div class="kmc-name" style="color:var(--H)">Hasan — Performance</div><button class="btn btn-g btn-sm" onclick="openKpiM('hasan')" style="margin-left:auto">+ KPI</button></div>
       <div id="hasan-kpi"></div>
     </div>
-    <div class="kmc">
-      <div class="kmc-h"><div class="av avD" style="width:28px;height:28px;font-size:10px">DW</div><div class="kmc-name" style="color:var(--D)">Diwa — Creative</div><button class="btn btn-g btn-sm" onclick="openKpiM('diwa')" style="margin-left:auto">+ KPI</button></div>
+    <div class="kmc" style="border-left:4px solid var(--D)">
+      <div class="kmc-h" style="background:var(--Dbg)"><div class="av avD" style="width:28px;height:28px;font-size:10px">DW</div><div class="kmc-name" style="color:var(--D)">Diwa — Creative</div><button class="btn btn-g btn-sm" onclick="openKpiM('diwa')" style="margin-left:auto">+ KPI</button></div>
       <div id="diwa-kpi"></div>
     </div>
-    <div class="kmc">
-      <div class="kmc-h"><div class="av avV" style="width:28px;height:28px;font-size:10px">VK</div><div class="kmc-name" style="color:var(--V)">Vicky</div><button class="btn btn-g btn-sm" onclick="openKpiM('vicky')" style="margin-left:auto">+ KPI</button></div>
+    <div class="kmc" style="border-left:4px solid var(--V)">
+      <div class="kmc-h" style="background:var(--Vbg)"><div class="av avV" style="width:28px;height:28px;font-size:10px">VK</div><div class="kmc-name" style="color:var(--V)">Vicky</div><button class="btn btn-g btn-sm" onclick="openKpiM('vicky')" style="margin-left:auto">+ KPI</button></div>
       <div id="vicky-kpi"></div>
     </div>
   </div>
@@ -479,8 +494,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="fg"><label class="fl">Target</label><input class="fi" id="kpi-tg" placeholder="cth. >2.5x"/></div>
         <div class="fg"><label class="fl">Aktual saat ini</label><input class="fi" id="kpi-ac" placeholder="cth. —"/></div>
       </div>
-      <div class="fg"><label class="fl">Status</label>
-        <select class="fs" id="kpi-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+      <div class="fr">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fs" id="kpi-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+        </div>
+        <div class="fg"><label class="fl">Tanggal update (opsional)</label><input class="fi" type="date" id="kpi-date"/></div>
       </div>
     </div>
     <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-kpi')">Batal</button><button class="btn btn-p" onclick="addKPI()">Simpan</button></div>
@@ -497,8 +515,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="fg"><label class="fl">Target</label><input class="fi" id="ke-tg"/></div>
         <div class="fg"><label class="fl">Aktual terbaru</label><input class="fi" id="ke-ac"/></div>
       </div>
-      <div class="fg"><label class="fl">Status</label>
-        <select class="fs" id="ke-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+      <div class="fr">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fs" id="ke-st"><option value="pend">Belum mulai</option><option value="prog">On track</option><option value="done">Tercapai</option><option value="late">Di bawah target</option></select>
+        </div>
+        <div class="fg"><label class="fl">Tanggal update (opsional)</label><input class="fi" type="date" id="ke-date"/></div>
       </div>
     </div>
     <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-kpi-ed')">Batal</button><button class="btn btn-p" onclick="saveKPIEdit()">Update</button></div>
@@ -526,6 +547,30 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="fg"><label class="fl">Catatan</label><input class="fi" id="te-note"/></div>
     </div>
     <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-tl-ed')">Batal</button><button class="btn btn-p" onclick="saveTlEdit()">Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Edit SOW task -->
+<div class="mo" id="mo-task-ed">
+  <div class="mdl mdl-lg">
+    <div class="mh"><div class="mt">Edit task</div><button class="mx" onclick="closeModal('mo-task-ed')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl">Nama task</label><input class="fi" id="te2-name"/></div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Prioritas</label>
+          <select class="fs" id="te2-prio"><option value="high">🔴 Tinggi</option><option value="mid">🟡 Sedang</option><option value="low">⚪ Rendah</option></select>
+        </div>
+        <div class="fg"><label class="fl">Status</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;padding-top:8px"><input type="checkbox" id="te2-done"/> Tandai selesai</label>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Tanggal mulai</label><input class="fi" type="date" id="te2-start"/></div>
+        <div class="fg"><label class="fl">Tanggal selesai</label><input class="fi" type="date" id="te2-end"/></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:-8px">Kosongkan tanggal jika task ini belum perlu tampil di Timeline</div>
+    </div>
+    <div class="mf"><button class="btn btn-g" onclick="closeModal('mo-task-ed')">Batal</button><button class="btn btn-p" onclick="saveTaskEdit()">Simpan</button></div>
   </div>
 </div>
 
@@ -668,6 +713,10 @@ function fmtDate(d){if(!d)return'—';const dt=new Date(d+'T00:00:00');return dt
 function fmtDateShort(d){if(!d)return'';const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('id-ID',{day:'2-digit',month:'short'})}
 function today(){return new Date().toISOString().split('T')[0]}
 function parseD(s){return s?new Date(s+'T00:00:00'):null}
+function startOfMonth(d){return new Date(d.getFullYear(),d.getMonth(),1)}
+function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
+function daysInRange(start,end){const arr=[];let c=new Date(start);while(c<=end){arr.push(new Date(c));c.setDate(c.getDate()+1)}return arr}
+function monthLabel(d){return d.toLocaleDateString('id-ID',{month:'long',year:'numeric'})}
 
 // ==================== PROJECT SWITCH ====================
 function switchProj(p,btn){
@@ -744,15 +793,76 @@ function addTask(who){
   const inp=document.getElementById(who+'-inp');
   const val=inp.value.trim();if(!val)return;
   const prio=document.getElementById(who+'-psel').value;
-  S[P][who].tasks.push({text:val,done:false,prio});
+  S[P][who].tasks.push({text:val,done:false,prio,start:'',end:''});
   inp.value='';inp.focus();
   renderSOW();renderDash();persist();toast('Task ditambahkan');
 }
-function toggleTask(who,i){S[P][who].tasks[i].done=!S[P][who].tasks[i].done;renderSOW();renderDash();persist()}
-function deleteTask(who,i){S[P][who].tasks.splice(i,1);renderSOW();renderDash();persist();toast('Task dihapus')}
+function toggleTask(who,i){S[P][who].tasks[i].done=!S[P][who].tasks[i].done;renderSOW();renderDash();renderTimeline();persist()}
+function deleteTask(who,i){S[P][who].tasks.splice(i,1);renderSOW();renderDash();renderTimeline();persist();toast('Task dihapus')}
+
+// ---- Task edit ----
+let taskEditRef={who:null,idx:null};
+function openTaskEdit(who,idx){
+  taskEditRef={who,idx};
+  const t=S[P][who].tasks[idx];
+  document.getElementById('te2-name').value=t.text;
+  document.getElementById('te2-prio').value=t.prio||'mid';
+  document.getElementById('te2-done').checked=!!t.done;
+  document.getElementById('te2-start').value=t.start||'';
+  document.getElementById('te2-end').value=t.end||'';
+  openModal('mo-task-ed');
+}
+function saveTaskEdit(){
+  const name=document.getElementById('te2-name').value.trim();
+  if(!name){toast('Nama task wajib diisi');return}
+  const start=document.getElementById('te2-start').value;
+  const end=document.getElementById('te2-end').value;
+  if((start&&!end)||(end&&!start)){toast('Tanggal mulai & selesai harus diisi berdua');return}
+  if(start&&end&&end<start){toast('Tanggal selesai harus setelah mulai');return}
+  const {who,idx}=taskEditRef;
+  const t=S[P][who].tasks[idx];
+  t.text=name;
+  t.prio=document.getElementById('te2-prio').value;
+  t.done=document.getElementById('te2-done').checked;
+  t.start=start;t.end=end;
+  closeModal('mo-task-ed');
+  renderSOW();renderDash();renderTimeline();persist();toast('Task diupdate');
+}
+
+// ---- Move up/down ----
+function moveTask(who,idx,dir){
+  const arr=S[P][who].tasks;
+  const t=arr[idx];
+  const target=idx+dir;
+  if(t.done||target<0||target>=arr.length||arr[target].done)return;
+  [arr[idx],arr[target]]=[arr[target],arr[idx]];
+  renderSOW();renderDash();renderTimeline();persist();
+}
+
+// ---- Drag reorder ----
+let dragCtx=null;
+function taskDragStart(e,who,idx){
+  dragCtx={who,idx};
+  e.dataTransfer.effectAllowed='move';
+  e.currentTarget.classList.add('dragging');
+}
+function taskDragEnd(e){e.currentTarget.classList.remove('dragging')}
+function taskDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move'}
+function taskDrop(e,who,idx){
+  e.preventDefault();
+  if(!dragCtx||dragCtx.who!==who||dragCtx.idx===idx){dragCtx=null;return}
+  const arr=S[P][who].tasks;
+  if(arr[idx]&&arr[idx].done){dragCtx=null;return}
+  const [item]=arr.splice(dragCtx.idx,1);
+  const insertIdx=dragCtx.idx<idx?idx-1:idx;
+  arr.splice(insertIdx,0,item);
+  dragCtx=null;
+  renderSOW();renderDash();renderTimeline();persist();
+}
 
 function renderSOW(){
   ['hasan','diwa','vicky'].forEach(who=>{
+    S[P][who].tasks=[...S[P][who].tasks.filter(t=>!t.done),...S[P][who].tasks.filter(t=>t.done)];
     const tasks=S[P][who].tasks;
     const done=tasks.filter(t=>t.done).length,total=tasks.length;
     const pct=total?Math.round(done/total*100):0;
@@ -763,14 +873,23 @@ function renderSOW(){
     if(!list)return;
     if(!tasks.length){list.innerHTML='<div class="empty-t">Belum ada task. Tambah di bawah.</div>';return}
     const pL={high:'ph',mid:'pm',low:'pl'};const pN={high:'Tinggi',mid:'Sedang',low:'Rendah'};
-    list.innerHTML=tasks.map((t,i)=>`<div class="task-item" onclick="toggleTask('${who}',${i})">
+    list.innerHTML=tasks.map((t,i)=>{
+      const canUp=!t.done&&i>0&&!tasks[i-1].done;
+      const canDown=!t.done&&i<tasks.length-1&&!tasks[i+1].done;
+      return `<div class="task-item" draggable="${!t.done}" ondragstart="taskDragStart(event,'${who}',${i})" ondragend="taskDragEnd(event)" ondragover="taskDragOver(event)" ondrop="taskDrop(event,'${who}',${i})" onclick="toggleTask('${who}',${i})">
       <div class="tcb ${t.done?'ck':''}"></div>
       <div class="ttx">
         <div class="ttm ${t.done?'done':''}">${t.text}</div>
-        <div class="tmt"><span class="pd ${pL[t.prio]||'pl'}"></span><span style="font-size:10px;color:var(--muted)">${pN[t.prio]||''}</span></div>
+        <div class="tmt"><span class="pd ${pL[t.prio]||'pl'}"></span><span style="font-size:10px;color:var(--muted)">${pN[t.prio]||''}</span>${t.start&&t.end?`<span style="font-size:10px;color:var(--muted)">· ${fmtDateShort(t.start)}–${fmtDateShort(t.end)}</span>`:''}</div>
       </div>
-      <button class="tdel" onclick="event.stopPropagation();deleteTask('${who}',${i})" title="Hapus">✕</button>
-    </div>`).join('');
+      <div class="task-actions">
+        <button class="tact tmove" ${canUp?'':'disabled'} onclick="event.stopPropagation();moveTask('${who}',${i},-1)" title="Naikkan urutan">↑</button>
+        <button class="tact tmove" ${canDown?'':'disabled'} onclick="event.stopPropagation();moveTask('${who}',${i},1)" title="Turunkan urutan">↓</button>
+        <button class="tact tedit" onclick="event.stopPropagation();openTaskEdit('${who}',${i})" title="Edit">✏</button>
+        <button class="tact tdel" onclick="event.stopPropagation();deleteTask('${who}',${i})" title="Hapus">✕</button>
+      </div>
+    </div>`;
+    }).join('');
   });
   const all=[...S[P].hasan.tasks,...S[P].diwa.tasks,...S[P].vicky.tasks];
   const tot=all.length,dn=all.filter(t=>t.done).length,pct=tot?Math.round(dn/tot*100):0;
@@ -781,6 +900,9 @@ function renderSOW(){
 
 // ==================== TIMELINE ====================
 let tlEditData=null;
+let tlAnchor=startOfMonth(new Date());
+function tlNavPrev(){tlAnchor=addMonths(tlAnchor,-1);renderTimeline()}
+function tlNavNext(){tlAnchor=addMonths(tlAnchor,1);renderTimeline()}
 
 function saveTlItem(){
   const name=document.getElementById('tl-name').value.trim();
@@ -824,48 +946,65 @@ function saveTlEdit(){
 function deleteTlItem(idx){S[P].timeline.splice(idx,1);renderTimeline();renderDash();persist();toast('Item dihapus')}
 
 function renderTimeline(){
-  const items=S[P].timeline;
+  const manualRows=S[P].timeline.map((it,idx)=>({name:it.name,who:it.who,status:it.status,start:it.start,end:it.end,note:it.note,_src:'manual',_idx:idx}));
+  const taskRows=[];
+  const todayStr0=today();
+  ['hasan','diwa','vicky'].forEach(who=>{
+    S[P][who].tasks.forEach((t,idx)=>{
+      if(t.start&&t.end){
+        taskRows.push({name:t.text,who,status:t.done?'done':(t.end<todayStr0?'late':'pend'),start:t.start,end:t.end,note:'',_src:'task',_who:who,_idx:idx});
+      }
+    });
+  });
+  const rows=[...manualRows,...taskRows];
+
   const tbl=document.getElementById('tl-tbl');
   const rng=document.getElementById('tl-date-range');
+  const navLbl=document.getElementById('tl-nav-label');
   if(!tbl)return;
 
-  if(!items.length){
-    tbl.innerHTML='<thead><tr><th colspan="3" style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Belum ada item. Klik "+ Tambah item".</th></tr></thead>';
-    rng.textContent='—';return;
+  if(navLbl)navLbl.textContent=monthLabel(tlAnchor)+' — '+monthLabel(addMonths(tlAnchor,1));
+
+  if(!rows.length){
+    tbl.innerHTML='<thead><tr><th colspan="3" style="padding:32px;text-align:center;color:var(--muted);font-size:13px">Belum ada item. Klik "+ Tambah item" atau isi tanggal pada task SOW.</th></tr></thead>';
+    if(rng)rng.textContent='—';
+    return;
   }
 
-  // Compute date range — span all items
-  const starts=items.map(i=>i.start).sort();
-  const ends=items.map(i=>i.end).sort();
-  const firstDate=parseD(starts[0]);
-  const lastDate=parseD(ends[ends.length-1]);
+  const starts=rows.map(r=>r.start).sort();
+  const ends=rows.map(r=>r.end).sort();
+  if(rng)rng.textContent=fmtDate(starts[0])+' — '+fmtDate(ends[ends.length-1]);
 
-  // Build week columns (Mon–Sun buckets)
-  const weeks=[];
-  let cur=new Date(firstDate);
-  // Go to Monday of first week
-  cur.setDate(cur.getDate()-((cur.getDay()+6)%7));
-  while(cur<=lastDate){
-    const wStart=new Date(cur);
-    const wEnd=new Date(cur);wEnd.setDate(wEnd.getDate()+6);
-    weeks.push({start:wStart,end:wEnd});
-    cur.setDate(cur.getDate()+7);
+  // Build daily columns — 2-month window anchored at tlAnchor
+  const rangeStart=new Date(tlAnchor);
+  const rangeEnd=new Date(tlAnchor.getFullYear(),tlAnchor.getMonth()+2,0);
+  const days=daysInRange(rangeStart,rangeEnd);
+
+  const todayD=parseD(today());
+
+  // Month grouping header row
+  let moHead='<tr class="tl-mo-head"><th class="lh"></th>';
+  let mi=0;
+  while(mi<days.length){
+    const mo=days[mi].getMonth(),yr=days[mi].getFullYear();
+    let span=1;
+    while(mi+span<days.length&&days[mi+span].getMonth()===mo&&days[mi+span].getFullYear()===yr)span++;
+    moHead+=`<th colspan="${span}">${days[mi].toLocaleDateString('id-ID',{month:'long',year:'numeric'}).toUpperCase()}</th>`;
+    mi+=span;
   }
-  if(weeks.length>16)weeks.splice(16); // max 16 cols
+  moHead+='<th></th></tr>';
 
-  const todayStr=today();
-  const todayD=parseD(todayStr);
-
-  rng.textContent=fmtDate(starts[0])+' — '+fmtDate(ends[ends.length-1]);
-
-  // Header
-  const fmtWk=(d)=>d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
-  let thead=`<thead><tr><th class="lh">Task / Deliverable</th>`;
-  weeks.forEach(w=>{
-    const isNow=todayD>=w.start&&todayD<=w.end;
-    thead+=`<th${isNow?' class="today-col"':''} style="min-width:62px">${fmtWk(w.start)}</th>`;
+  // Day header row — weekday / date / month, unambiguous per-column
+  let dayHead='<tr><th class="lh">Task / Deliverable</th>';
+  days.forEach(d=>{
+    const isNow=d.getTime()===todayD.getTime();
+    const wd=d.toLocaleDateString('id-ID',{weekday:'short'}).toUpperCase();
+    const mo=d.toLocaleDateString('id-ID',{month:'short'});
+    dayHead+=`<th${isNow?' class="today-col"':''} style="min-width:34px"><div class="tl-day-wd">${wd}</div><div class="tl-day-num">${String(d.getDate()).padStart(2,'0')}</div><div class="tl-day-mo">${mo}</div></th>`;
   });
-  thead+=`</tr></thead>`;
+  dayHead+='<th style="min-width:60px"></th></tr>';
+
+  const thead=`<thead>${moHead}${dayHead}</thead>`;
 
   // Rows
   const stMap={done:'b-done',prog:'b-prog',pend:'b-pend',late:'b-late'};
@@ -875,34 +1014,39 @@ function renderTimeline(){
   const whoBdg={hasan:'b-H',diwa:'b-D',vicky:'b-V',both:'b-both'};
 
   let tbody='<tbody>';
-  items.forEach((it,idx)=>{
+  rows.forEach(it=>{
     const iStart=parseD(it.start);
     const iEnd=parseD(it.end);
     const isPast=iEnd<todayD;
     const trClass=isPast?'tl-past':'';
 
     let cells='';
-    let i=0;
-    while(i<weeks.length){
-      const w=weeks[i];
-      const overlap=iStart<=w.end&&iEnd>=w.start;
+    let j=0;
+    while(j<days.length){
+      const d=days[j];
+      const overlap=iStart<=d&&iEnd>=d;
       if(overlap){
-        // Count consecutive overlapping weeks
         let span=1;
-        while(i+span<weeks.length&&iStart<=weeks[i+span].end&&iEnd>=weeks[i+span].start)span++;
-        const isNow=todayD>=w.start&&todayD<=weeks[i+span-1].end;
+        while(j+span<days.length&&iStart<=days[j+span]&&iEnd>=days[j+span])span++;
+        const isNow=todayD.getTime()>=days[j].getTime()&&todayD.getTime()<=days[j+span-1].getTime();
         cells+=`<td colspan="${span}"${isNow?' class="tl-today-marker"':''}><div class="tl-bar ${whoMap[it.who]}">${it.name}</div></td>`;
-        i+=span;
+        j+=span;
       } else {
-        const isNow=todayD>=w.start&&todayD<=w.end;
-        cells+=`<td${isNow?' class="tl-today-marker"':''}></td>`;i++;
+        const isNow=d.getTime()===todayD.getTime();
+        cells+=`<td${isNow?' class="tl-today-marker"':''}></td>`;j++;
       }
     }
 
     const noteHtml=it.note?`<span style="font-size:10px;color:var(--muted);margin-left:4px">${it.note}</span>`:'';
+    const actions=it._src==='manual'
+      ?`<button class="btn-ic" onclick="openTlEdit(${it._idx})">✏</button><button class="btn-ic" onclick="deleteTlItem(${it._idx})" style="color:var(--red)">✕</button>`
+      :`<button class="btn-ic" onclick="openTaskEdit('${it._who}',${it._idx})">✏</button>`;
+    const nameHtml=it._src==='task'
+      ?`<div style="display:flex;align-items:center;gap:6px"><div class="tcb ${it.status==='done'?'ck':''}" style="cursor:pointer" onclick="toggleTask('${it._who}',${it._idx})" title="Tandai selesai"></div><div class="tl-task-name">${it.name}</div></div>`
+      :`<div class="tl-task-name">${it.name}</div>`;
     tbody+=`<tr class="${trClass}">
       <td class="lc">
-        <div class="tl-task-name">${it.name}</div>
+        ${nameHtml}
         <div class="tl-task-who">
           <span class="bdg ${whoBdg[it.who]}">${whoLbl[it.who]}</span>
           <span class="bdg ${stMap[it.status]}">${stLbl[it.status]}</span>
@@ -912,10 +1056,7 @@ function renderTimeline(){
       </td>
       ${cells}
       <td style="padding:0 8px">
-        <div style="display:flex;gap:3px">
-          <button class="btn-ic" onclick="openTlEdit(${idx})">✏</button>
-          <button class="btn-ic" onclick="deleteTlItem(${idx})" style="color:var(--red)">✕</button>
-        </div>
+        <div style="display:flex;gap:3px">${actions}</div>
       </td>
     </tr>`;
   });
@@ -932,9 +1073,10 @@ function addKPI(){
   const tg=document.getElementById('kpi-tg').value.trim();
   const ac=document.getElementById('kpi-ac').value.trim()||'—';
   const st=document.getElementById('kpi-st').value;
+  const date=document.getElementById('kpi-date').value;
   if(!met||!tg){toast('Metrik dan target wajib diisi');return}
-  S[P].kpi[who].push({met,tg,ac,st});
-  ['kpi-met','kpi-tg','kpi-ac'].forEach(id=>document.getElementById(id).value='');
+  S[P].kpi[who].push({met,tg,ac,st,date});
+  ['kpi-met','kpi-tg','kpi-ac','kpi-date'].forEach(id=>document.getElementById(id).value='');
   closeModal('mo-kpi');renderKPI();renderDash();persist();toast('KPI ditambahkan');
 }
 function openKpiEdit(who,i){
@@ -944,6 +1086,7 @@ function openKpiEdit(who,i){
   document.getElementById('ke-tg').value=k.tg;
   document.getElementById('ke-ac').value=k.ac;
   document.getElementById('ke-st').value=k.st;
+  document.getElementById('ke-date').value=k.date||'';
   openModal('mo-kpi-ed');
 }
 function saveKPIEdit(){
@@ -952,6 +1095,7 @@ function saveKPIEdit(){
   k.tg=document.getElementById('ke-tg').value;
   k.ac=document.getElementById('ke-ac').value;
   k.st=document.getElementById('ke-st').value;
+  k.date=document.getElementById('ke-date').value;
   closeModal('mo-kpi-ed');renderKPI();renderDash();persist();toast('KPI diupdate');
 }
 function deleteKPI(who,i){S[P].kpi[who].splice(i,1);renderKPI();renderDash();persist();toast('KPI dihapus')}
@@ -965,7 +1109,7 @@ function renderKPI(){
     if(!el)return;
     if(!list.length){el.innerHTML='<div class="no-kpi">Belum ada KPI. Klik "+ KPI".</div>';return}
     el.innerHTML=list.map((k,i)=>`<div class="kpi-row">
-      <span class="kpi-m">${k.met}</span>
+      <span class="kpi-m">${k.met}${k.date?`<br/><span style="font-size:10px;color:var(--muted);font-weight:400">${fmtDate(k.date)}</span>`:''}</span>
       <span class="kpi-tg">${k.tg}</span>
       <span class="kpi-ac">${k.ac}</span>
       <span class="bdg ${sC[k.st]}">${sL[k.st]}</span>
